@@ -5,7 +5,7 @@ import os
 from io import BytesIO
 
 # -------------------------
-# PAGE CONFIG
+# CONFIG
 # -------------------------
 
 st.set_page_config(
@@ -18,10 +18,7 @@ st.set_page_config(
 # -------------------------
 
 st.title("📊 Платформа контроля реестров")
-
-st.caption(
-    "Пилотная версия системы анализа корпоративных реестров"
-)
+st.caption("Пилотная версия системы анализа корпоративных реестров")
 
 st.write("""
 Система выполняет:
@@ -35,65 +32,26 @@ st.write("""
 # DIRECTORIES
 # -------------------------
 
-os.makedirs("data", exist_ok=True)
 os.makedirs("output", exist_ok=True)
 
 # -------------------------
-# DATA LOADING
+# DATA LOAD (DEMO ONLY)
 # -------------------------
 
 st.subheader("📥 Загрузка данных")
 
-# -------------------------
-# DEMO DATA FROM GITHUB
-# -------------------------
-
 try:
-    demo_contracts = pd.read_excel("data/contracts.xlsx")
-    demo_documents = pd.read_excel("data/documents.xlsx")
-    demo_assets = pd.read_excel("data/assets.xlsx")
+    contracts_df = pd.read_excel("data/contracts.xlsx")
+    documents_df = pd.read_excel("data/documents.xlsx")
+    assets_df = pd.read_excel("data/assets.xlsx")
 
     st.success("📊 Загружены демонстрационные данные из GitHub")
 
 except Exception:
-    pass
-
-# -------------------------
-# OPTIONAL USER UPLOAD
-# -------------------------
-
-st.write("### Загрузите пользовательские файлы (опционально)")
-
-contracts_file = st.file_uploader(
-    "Контракты",
-    type=["xlsx"]
-)
-
-documents_file = st.file_uploader(
-    "Документы",
-    type=["xlsx"]
-)
-
-assets_file = st.file_uploader(
-    "Имущество",
-    type=["xlsx"]
-)
-
-# -------------------------
-# SAVE USER FILES
-# -------------------------
-
-if contracts_file:
-    with open("data/contracts.xlsx", "wb") as f:
-        f.write(contracts_file.getbuffer())
-
-if documents_file:
-    with open("data/documents.xlsx", "wb") as f:
-        f.write(documents_file.getbuffer())
-
-if assets_file:
-    with open("data/assets.xlsx", "wb") as f:
-        f.write(assets_file.getbuffer())
+    st.error("❌ Не найдены demo-файлы в папке data/")
+    contracts_df = None
+    documents_df = None
+    assets_df = None
 
 # -------------------------
 # DATA PREVIEW
@@ -101,32 +59,17 @@ if assets_file:
 
 st.subheader("👀 Предпросмотр данных")
 
-if os.path.exists("data/contracts.xlsx"):
-
-    contracts_preview = pd.read_excel(
-        "data/contracts.xlsx"
-    )
-
+if contracts_df is not None:
     st.write("### Контракты")
-    st.dataframe(contracts_preview)
+    st.dataframe(contracts_df)
 
-if os.path.exists("data/documents.xlsx"):
-
-    documents_preview = pd.read_excel(
-        "data/documents.xlsx"
-    )
-
+if documents_df is not None:
     st.write("### Документы")
-    st.dataframe(documents_preview)
+    st.dataframe(documents_df)
 
-if os.path.exists("data/assets.xlsx"):
-
-    assets_preview = pd.read_excel(
-        "data/assets.xlsx"
-    )
-
+if assets_df is not None:
     st.write("### Имущество")
-    st.dataframe(assets_preview)
+    st.dataframe(assets_df)
 
 # -------------------------
 # ANALYSIS
@@ -136,8 +79,9 @@ st.subheader("🚀 Анализ")
 
 if st.button("Запустить анализ"):
 
-    with st.spinner("Выполняется анализ данных..."):
+    st.write("📊 Используются demo-данные из GitHub")
 
+    with st.spinner("Выполняется анализ данных..."):
         subprocess.run(["python", "run_all.py"])
 
     st.success("✅ Анализ завершен!")
@@ -145,70 +89,43 @@ if st.button("Запустить анализ"):
     st.subheader("📊 Результаты анализа")
 
     # -------------------------
-    # CONTRACTS RESULTS
+    # CONTRACTS
     # -------------------------
 
-    contracts_df = None
+    contracts_result = None
 
-    if os.path.exists(
-        "output/renewal_contracts.xlsx"
-    ):
+    if os.path.exists("output/renewal_contracts.xlsx"):
+        contracts_result = pd.read_excel("output/renewal_contracts.xlsx")
+        contracts_result["Priority"] = "High"
 
-        contracts_df = pd.read_excel(
-            "output/renewal_contracts.xlsx"
-        )
-
-        contracts_df["Priority"] = "High"
-
-        st.write(
-            "### 📌 Контракты на перезаключение"
-        )
-
-        st.dataframe(contracts_df)
+        st.write("### 📌 Контракты на перезаключение")
+        st.dataframe(contracts_result)
 
     # -------------------------
-    # DOCUMENTS RESULTS
+    # DOCUMENTS
     # -------------------------
 
-    docs_df = None
+    docs_result = None
 
-    if os.path.exists(
-        "output/documents_for_update.xlsx"
-    ):
+    if os.path.exists("output/documents_for_update.xlsx"):
+        docs_result = pd.read_excel("output/documents_for_update.xlsx")
+        docs_result["Priority"] = "Medium"
 
-        docs_df = pd.read_excel(
-            "output/documents_for_update.xlsx"
-        )
-
-        docs_df["Priority"] = "Medium"
-
-        st.write(
-            "### 📌 Документы на актуализацию"
-        )
-
-        st.dataframe(docs_df)
+        st.write("### 📌 Документы на актуализацию")
+        st.dataframe(docs_result)
 
     # -------------------------
-    # ASSETS RESULTS
+    # ASSETS
     # -------------------------
 
-    assets_df = None
+    assets_result = None
 
-    if os.path.exists(
-        "output/asset_issues.xlsx"
-    ):
+    if os.path.exists("output/asset_issues.xlsx"):
+        assets_result = pd.read_excel("output/asset_issues.xlsx")
+        assets_result["Priority"] = "High"
 
-        assets_df = pd.read_excel(
-            "output/asset_issues.xlsx"
-        )
-
-        assets_df["Priority"] = "High"
-
-        st.write(
-            "### 📌 Проблемы по имуществу"
-        )
-
-        st.dataframe(assets_df)
+        st.write("### 📌 Проблемы по имуществу")
+        st.dataframe(assets_result)
 
     # -------------------------
     # EXCEL REPORT
@@ -218,31 +135,16 @@ if st.button("Запустить анализ"):
 
     output = BytesIO()
 
-    with pd.ExcelWriter(
-        output,
-        engine="openpyxl"
-    ) as writer:
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
 
-        if contracts_df is not None:
-            contracts_df.to_excel(
-                writer,
-                sheet_name="Contracts_to_work",
-                index=False
-            )
+        if contracts_result is not None:
+            contracts_result.to_excel(writer, sheet_name="Contracts", index=False)
 
-        if docs_df is not None:
-            docs_df.to_excel(
-                writer,
-                sheet_name="Documents_to_update",
-                index=False
-            )
+        if docs_result is not None:
+            docs_result.to_excel(writer, sheet_name="Documents", index=False)
 
-        if assets_df is not None:
-            assets_df.to_excel(
-                writer,
-                sheet_name="Assets_issues",
-                index=False
-            )
+        if assets_result is not None:
+            assets_result.to_excel(writer, sheet_name="Assets", index=False)
 
     output.seek(0)
 
@@ -253,22 +155,22 @@ if st.button("Запустить анализ"):
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    # -------------------------
-    # EXECUTIVE SUMMARY
-    # -------------------------
+# -------------------------
+# EXECUTIVE SUMMARY
+# -------------------------
 
-    st.subheader("📌 Executive Summary")
+st.subheader("📌 Executive Summary")
 
-    st.info("""
-Система выполнила анализ корпоративных реестров.
+st.info("""
+Система выполняет автоматический анализ корпоративных реестров.
 
-Выявлены:
+Выявляются:
 - контракты, требующие перезаключения
 - документы на актуализацию
 - нарушения по имуществу
 
 Рекомендуется:
-- провести контроль сроков контрактов
-- обновить нормативные документы
-- провести контроль документов выдачи имущества
+- контроль сроков контрактов
+- обновление документов
+- проверка учета имущества
 """)
