@@ -5,7 +5,7 @@ import os
 from io import BytesIO
 
 # -------------------------
-# CONFIG
+# PAGE CONFIG
 # -------------------------
 
 st.set_page_config(
@@ -18,49 +18,48 @@ st.set_page_config(
 # -------------------------
 
 st.title("📊 Платформа контроля реестров")
-st.caption("Пилотная версия системы анализа корпоративных реестров")
+
+st.caption(
+    "Пилотная версия системы анализа корпоративных реестров"
+)
 
 st.write("""
 Система выполняет:
-- контроль сроков контрактов
-- анализ актуальности документов
-- проверку данных по имуществу
+- анализ сроков контрактов
+- контроль актуальности документов
+- проверку реестра имущества
+- формирование управленческой отчетности
 """)
 
 # -------------------------
-# DATA DIRECTORY
+# DIRECTORIES
 # -------------------------
 
 os.makedirs("data", exist_ok=True)
 os.makedirs("output", exist_ok=True)
 
 # -------------------------
-# ЗАГРУЗКА ФАЙЛОВ
+# DATA LOADING
 # -------------------------
 
 st.subheader("📥 Загрузка данных")
 
 # -------------------------
-# DEMO FILES FROM GITHUB
+# DEMO DATA FROM GITHUB
 # -------------------------
 
 try:
-    demo_contracts = pd.read_excel("contracts.xlsx")
-    demo_documents = pd.read_excel("documents.xlsx")
-    demo_assets = pd.read_excel("assets.xlsx")
-
-    # Копируем demo-файлы в data/
-    demo_contracts.to_excel("data/contracts.xlsx", index=False)
-    demo_documents.to_excel("data/documents.xlsx", index=False)
-    demo_assets.to_excel("data/assets.xlsx", index=False)
+    demo_contracts = pd.read_excel("data/contracts.xlsx")
+    demo_documents = pd.read_excel("data/documents.xlsx")
+    demo_assets = pd.read_excel("data/assets.xlsx")
 
     st.success("📊 Загружены демонстрационные данные из GitHub")
 
 except Exception:
-    st.warning("⚠️ Демонстрационные файлы не найдены")
+    pass
 
 # -------------------------
-# USER FILE UPLOAD
+# OPTIONAL USER UPLOAD
 # -------------------------
 
 st.write("### Загрузите пользовательские файлы (опционально)")
@@ -81,7 +80,7 @@ assets_file = st.file_uploader(
 )
 
 # -------------------------
-# SAVE UPLOADED FILES
+# SAVE USER FILES
 # -------------------------
 
 if contracts_file:
@@ -103,18 +102,30 @@ if assets_file:
 st.subheader("👀 Предпросмотр данных")
 
 if os.path.exists("data/contracts.xlsx"):
+
+    contracts_preview = pd.read_excel(
+        "data/contracts.xlsx"
+    )
+
     st.write("### Контракты")
-    contracts_preview = pd.read_excel("data/contracts.xlsx")
     st.dataframe(contracts_preview)
 
 if os.path.exists("data/documents.xlsx"):
+
+    documents_preview = pd.read_excel(
+        "data/documents.xlsx"
+    )
+
     st.write("### Документы")
-    documents_preview = pd.read_excel("data/documents.xlsx")
     st.dataframe(documents_preview)
 
 if os.path.exists("data/assets.xlsx"):
+
+    assets_preview = pd.read_excel(
+        "data/assets.xlsx"
+    )
+
     st.write("### Имущество")
-    assets_preview = pd.read_excel("data/assets.xlsx")
     st.dataframe(assets_preview)
 
 # -------------------------
@@ -139,7 +150,9 @@ if st.button("Запустить анализ"):
 
     contracts_df = None
 
-    if os.path.exists("output/renewal_contracts.xlsx"):
+    if os.path.exists(
+        "output/renewal_contracts.xlsx"
+    ):
 
         contracts_df = pd.read_excel(
             "output/renewal_contracts.xlsx"
@@ -147,7 +160,10 @@ if st.button("Запустить анализ"):
 
         contracts_df["Priority"] = "High"
 
-        st.write("### 📌 Контракты на перезаключение")
+        st.write(
+            "### 📌 Контракты на перезаключение"
+        )
+
         st.dataframe(contracts_df)
 
     # -------------------------
@@ -156,7 +172,9 @@ if st.button("Запустить анализ"):
 
     docs_df = None
 
-    if os.path.exists("output/documents_for_update.xlsx"):
+    if os.path.exists(
+        "output/documents_for_update.xlsx"
+    ):
 
         docs_df = pd.read_excel(
             "output/documents_for_update.xlsx"
@@ -164,7 +182,10 @@ if st.button("Запустить анализ"):
 
         docs_df["Priority"] = "Medium"
 
-        st.write("### 📌 Документы на актуализацию")
+        st.write(
+            "### 📌 Документы на актуализацию"
+        )
+
         st.dataframe(docs_df)
 
     # -------------------------
@@ -173,7 +194,9 @@ if st.button("Запустить анализ"):
 
     assets_df = None
 
-    if os.path.exists("output/asset_issues.xlsx"):
+    if os.path.exists(
+        "output/asset_issues.xlsx"
+    ):
 
         assets_df = pd.read_excel(
             "output/asset_issues.xlsx"
@@ -181,7 +204,10 @@ if st.button("Запустить анализ"):
 
         assets_df["Priority"] = "High"
 
-        st.write("### 📌 Проблемы по имуществу")
+        st.write(
+            "### 📌 Проблемы по имуществу"
+        )
+
         st.dataframe(assets_df)
 
     # -------------------------
@@ -237,9 +263,9 @@ if st.button("Запустить анализ"):
 Система выполнила анализ корпоративных реестров.
 
 Выявлены:
-- контракты, требующие перезаключения (High Priority)
-- документы на актуализацию (Medium Priority)
-- нарушения по имуществу (High Priority)
+- контракты, требующие перезаключения
+- документы на актуализацию
+- нарушения по имуществу
 
 Рекомендуется:
 - провести контроль сроков контрактов
